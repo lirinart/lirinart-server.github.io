@@ -1,16 +1,23 @@
+// index.js
+require('dotenv').config();  // Load .env file
+
 const express = require('express');
 const multer = require('multer');  // Import multer for file handling
 const path = require('path');
-const { connectToDatabase } = require('./db/connection');
-const artworkRoutes = require('./routes/artworks');
-
+const { MongoClient } = require('mongodb');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
+
+// Middleware to parse JSON
+app.use(express.json());
+
+// MongoDB connection URI
+const uri = process.env.MONGODB_URI;  // MongoDB URI from .env
 
 // Multer setup for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Files will be stored in the 'uploads/' directory
+        cb(null, 'uploads/');  // Files will be stored in the 'uploads/' directory
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));  // File name will be timestamp + file extension
@@ -20,15 +27,44 @@ const upload = multer({ storage });
 
 // Middleware to parse JSON
 app.use(express.json());
-app.use('/artworks', artworkRoutes); // Using the artwork routes
-app.use('/admin', express.static('admin')); // Static files for the admin panel
 
+// Connect to MongoDB
+async function connectToDatabase() {
+    const client = new MongoClient(uri);
+    try {
+        await client.connect();
+        console.log('Connected to MongoDB!');
+        return client.db('lirinart'); // Use the 'lirinart' database
+    } catch (error) {
+        console.error('Error connecting to MongoDB', error);
+        throw error;
+    }
+}
+
+// Route for the root path
+app.get('/', (req, res) => {
+    res.send(`
+        <html>
+            <head>
+                <title>Lirin Art API Site</title>
+            </head>
+            <body>
+                <h1>Welcome to the Lirin Art API Site</h1>
+                <p>Click below to go to the admin dashboard:</p>
+                <a href="/admin/dashboard">Go to Admin Dashboard</a>
+            </body>
+        </html>
+    `);
+});
+
+// Serve static files from the 'admin' directory
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
 // Route for Admin Dashboard
 app.get('/admin/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin', 'dashboard.html'));
 });
 
-// Route for Add Artwork page (with file upload)
+// Route to Add Artwork
 app.get('/admin/add-artwork', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin', 'add-artwork.html'));
 });
@@ -55,7 +91,7 @@ app.post('/admin/add-artwork', upload.single('image'), async (req, res) => {
     }
 });
 
-// Route for managing artworks
+// Route to manage artworks
 app.get('/admin/manage-artworks', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin', 'manage-artworks.html'));
 });
