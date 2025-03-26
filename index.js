@@ -20,7 +20,6 @@ const upload = multer({ storage });
 
 // Middleware to parse JSON
 app.use(express.json());
-
 app.use('/artworks', artworkRoutes); // Using the artwork routes
 app.use('/admin', express.static('admin')); // Static files for the admin panel
 
@@ -34,20 +33,27 @@ app.get('/admin/add-artwork', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin', 'add-artwork.html'));
 });
 
-// Route to add a new artwork
-app.post('/artworks', async (req, res) => {
-    const { title, description } = req.body;
+// Route to handle adding artwork
+app.post('/admin/add-artwork', upload.single('image'), async (req, res) => {
+    const { title, description, tags } = req.body;
+    const image = req.file ? req.file.filename : null;  // Get the uploaded image's filename
+
+    // Validate input
+    if (!title || !description || !image) {
+        return res.status(400).send('Missing required fields');
+    }
+
     const db = await connectToDatabase();
     const collection = db.collection('artworks');
+    
     try {
-        const result = await collection.insertOne({ title, description });
-        res.status(201).send(`Artwork created with ID: ${result.insertedId}`);
+        const result = await collection.insertOne({ title, description, image, tags });
+        res.status(201).send(`Artwork added with ID: ${result.insertedId}`);
     } catch (error) {
         console.error("Error adding artwork", error);
         res.status(500).send("Error adding artwork");
     }
 });
-
 
 // Route for managing artworks
 app.get('/admin/manage-artworks', (req, res) => {
