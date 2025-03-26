@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Artwork - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="bg-purple-600 p-4 text-white">
+        <div class="container mx-auto">
+            <h1 class="text-3xl font-bold">Add New Artwork</h1>
+        </div>
+    </nav>
+
+    <!-- Add Artwork Form -->
+    <div class="container mx-auto mt-10">
+        <form id="artworkForm" class="bg-white p-6 rounded-lg shadow-md">
+            <label for="title" class="block text-lg font-semibold">Title</label>
+            <input type="text" id="title" name="title" required class="mt-2 p-2 w-full border rounded-md">
+            
+            <label for="description" class="block text-lg font-semibold mt-4">Description</label>
+            <textarea id="description" name="description" required class="mt-2 p-2 w-full border rounded-md"></textarea>
+
+            <label for="tags" class="block text-lg font-semibold mt-4">Tags (comma separated)</label>
+            <input type="text" id="tags" name="tags" class="mt-2 p-2 w-full border rounded-md">
+            
+            <button type="submit" class="mt-6 bg-purple-600 text-white px-6 py-3 rounded-full shadow hover:bg-purple-700">Add Artwork</button>
+        </form>
+    </div>
+
+    <script>
+        // Handle form submission to add new artwork
+        document.getElementById('artworkForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const tags = document.getElementById('tags').value.split(',');
+
+            const artwork = { title, description, tags };
+
+            try {
+                const response = await fetch('https://lirinart-server.vercel.app/artworks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(artwork),
+                });
+
+                if (response.ok) {
+                    alert('Artwork added successfully!');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert('Error adding artwork');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error adding artwork');
+            }
+        });
+    </script>
+
+</body>
+</html>
