@@ -39,7 +39,18 @@ app.get('/admin/add-artwork', (req, res) => {
 
 // Default route
 app.get('/', (req, res) => {
-    res.send("Welcome to Lirin Art API site");
+    res.send(`
+        <html>
+            <head>
+                <title>Lirin Art API Site</title>
+            </head>
+            <body>
+                <h1>Welcome to the Lirin Art API Site</h1>
+                <p>Click below to go to the admin dashboard:</p>
+                <a href="/admin/dashboard.html">Go to Admin Dashboard</a>
+            </body>
+        </html>
+    `);
 });
 
 // Start the server
