@@ -1,0 +1,50 @@
+<!-- admin/manage-artworks.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Artworks</title>
+</head>
+<body>
+    <h1>Manage Artworks</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Tags</th>
+                <th>Image</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="artworks-table">
+            <!-- Artwork rows will be inserted dynamically -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fetch and display artworks from the server
+        fetch('/artworks')
+            .then(response => response.json())
+            .then(artworks => {
+                const tableBody = document.getElementById('artworks-table');
+                artworks.forEach(artwork => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${artwork.title}</td>
+                        <td>${artwork.description}</td>
+                        <td>${artwork.tags.join(', ')}</td>
+                        <td><img src="/uploads/${artwork.image}" alt="${artwork.title}" width="100"></td>
+                        <td>
+                            <button>Edit</button>
+                            <button>Delete</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(err => console.error('Error fetching artworks:', err));
+    </script>
+</body>
+</html>
