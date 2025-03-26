@@ -4,7 +4,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // MongoDB connection URI
-const uri = "mongodb+srv://lirinart:<db_password>@lirinart-cluster.eylms.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://lirinart:mongodbkonto73@lirinart-cluster.eylms.mongodb.net/?retryWrites=true&w=majority";
 
 // MongoDB client
 const client = new MongoClient(uri);
