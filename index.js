@@ -6,7 +6,7 @@ const multer = require('multer');  // Import multer for file handling
 const path = require('path');
 const { MongoClient } = require('mongodb');
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -14,10 +14,18 @@ app.use(express.json());
 // MongoDB connection URI
 const uri = process.env.MONGODB_URI;  // MongoDB URI from .env
 
+const fs = require('fs');
+
+// Create the gallery folder if it doesn't exist
+const galleryPath = path.join(__dirname, 'gallery');
+if (!fs.existsSync(galleryPath)) {
+    fs.mkdirSync(galleryPath);
+}
+
 // Multer setup for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/');  // Files will be stored in the 'uploads/' directory
+        cb(null, 'gallery/');  // Files will be stored in the 'gallery/' directory
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));  // File name will be timestamp + file extension
