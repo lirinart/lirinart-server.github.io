@@ -117,6 +117,60 @@ app.get('/', (req, res) => {
     `);
 });
 
+// Route for Admin Dashboard
+app.get('/admin/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin', 'dashboard.html'));
+});
+
+// Route to Add Artwork page
+app.get('/admin/add-artwork', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin', 'add-artwork.html'));
+});
+
+// Route to manage artworks
+app.get('/admin/manage-artworks', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin', 'manage-artworks.html'));
+});
+
+// Route to handle adding artwork
+app.post('/admin/add-artwork', upload.single('image'), async (req, res) => {
+    const { title, description, tags } = req.body;
+    const image = req.file ? req.file.filename : null;  // Get the uploaded image's filename
+
+    // Validate input
+    if (!title || !description || !image) {
+        return res.status(400).send('Missing required fields');
+    }
+
+    const db = await connectToDatabase();
+    const collection = db.collection('artworks');
+    
+    try {
+        const result = await collection.insertOne({ title, description, image, tags });
+        res.status(201).send(`Artwork added with ID: ${result.insertedId}`);
+    } catch (error) {
+        console.error("Error adding artwork", error);
+        res.status(500).send("Error adding artwork");
+    }
+});
+
+// Serve static files from the 'admin' directory
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
+
+// Route to get all artworks
+app.get('/artworks', async (req, res) => {
+    const db = await connectToDatabase();
+    const collection = db.collection('artworks');
+    try {
+        const artworks = await collection.find({}).toArray();
+        res.json(artworks);
+    } catch (error) {
+        console.error("Error fetching artworks", error);
+        res.status(500).send("Error fetching artworks");
+    }
+});
+
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
