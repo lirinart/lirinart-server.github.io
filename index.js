@@ -1,3 +1,4 @@
+require('dotenv').config();  // Load environment variables from the .env file
 const express = require('express');
 const multer = require('multer');  // Import multer for file handling
 const path = require('path');
