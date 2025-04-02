@@ -1,4 +1,5 @@
 require('dotenv').config();  // Load environment variables from the .env file
+console.log(process.env.MONGODB_URI);  // This should output the MongoDB URI if the .env file is loaded correctly
 const express = require('express');
 const multer = require('multer');  // Import multer for file handling
 const path = require('path');
@@ -99,6 +100,23 @@ async function initDatabase() {
 }
 
 initDatabase(); // Initialize DB connection when the server starts
+
+app.get('/', (req, res) => {
+    console.log("Root path accessed");
+    res.send(`
+        <html>
+            <head>
+                <title>Lirin Art API Site</title>
+            </head>
+            <body>
+                <h1>Welcome to the Lirin Art API Site</h1>
+                <p>Click below to go to the admin dashboard:</p>
+                <a href="/admin/dashboard">Go to Admin Dashboard</a>
+            </body>
+        </html>
+    `);
+});
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
