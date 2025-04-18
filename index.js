@@ -44,8 +44,13 @@ app.get('/admin/add-artwork', (req, res) => {
 // Route to handle adding artwork
 app.post('/admin/add-artwork', upload.single('image'), async (req, res) => {
     const { title, description, tags } = req.body;
-    const image = req.file ? req.file.buffer : null;  // Get the uploaded image's buffer
-
+    let image = req.file ? req.file.buffer : null;  
+    let tagsArray = [];
+    if (tags) {
+        
+        tagsArray = tags.split(',').map(tag => tag.trim());
+        console.log(tagsArray);
+    }
     // Validate input
     if (!title || !description || !image) {
         return res.status(400).send('Missing required fields');
@@ -69,7 +74,7 @@ app.post('/admin/add-artwork', upload.single('image'), async (req, res) => {
                     title,
                     description,
                     image: result.secure_url,  // Save Cloudinary URL
-                    tags
+                    tags: tagsArray
                 };
 
                 const resultDB = await collection.insertOne(artwork);
@@ -89,7 +94,7 @@ app.get('/admin/manage-artworks', async (req, res) => {
     const db = await dbPromise;
     const collection = db.collection('artworks');
     const artworks = await collection.find({}).toArray();
-    console.log(artworks);  // Добавьте лог, чтобы проверить, что вернуло API
+    console.log(artworks);  
     res.sendFile(path.join(__dirname, 'admin', 'manage-artworks.html'));
 });
 
