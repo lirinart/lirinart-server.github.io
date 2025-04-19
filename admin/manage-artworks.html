@@ -9,18 +9,19 @@
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-    <h1>Manage Artworks</h1>
-    <table>
+    <h1 class="text-3xl font-bold text-center mt-4 mb-8">Manage Artworks</h1>
+
+    <table class="min-w-full table-auto border-collapse border border-gray-300">
         <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Tags</th>
-                <th>Image</th>
-                <th>Actions</th>
+            <tr class="bg-gray-100">
+                <th class="border px-4 py-2">Title</th>
+                <th class="border px-4 py-2">Description</th>
+                <th class="border px-4 py-2">Tags</th>
+                <th class="border px-4 py-2">Image</th>
+                <th class="border px-4 py-2">Actions</th>
             </tr>
         </thead>
-        <tbody id="artworks-table">
+        <tbody id="artworks-table" class="text-center">
             <!-- Artwork rows will be inserted dynamically -->
         </tbody>
     </table>
@@ -33,14 +34,15 @@
                 const tableBody = document.getElementById('artworks-table');
                 artworks.forEach(artwork => {
                     const row = document.createElement('tr');
+                    row.classList.add('border-b');
                     row.innerHTML = `
-                        <td>${artwork.title}</td>
-                        <td>${artwork.description}</td>
-                        <td>${artwork.tags.join(', ')}</td>
-                        <td><img src="/gallery/${artwork.image}" alt="${artwork.title}" width="100"></td>
-                        <td>
-                            <button>Edit</button>
-                            <button>Delete</button>
+                        <td class="border px-4 py-2">${artwork.title}</td>
+                        <td class="border px-4 py-2">${artwork.description}</td>
+                        <td class="border px-4 py-2">${artwork.tags.join(', ')}</td>
+                        <td class="border px-4 py-2"><img src="${artwork.image}" alt="${artwork.title}" width="100"></td>
+                        <td class="border px-4 py-2">
+                            <button onclick="editArtwork('${artwork._id}')" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
+                            <button onclick="deleteArtwork('${artwork._id}')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
                         </td>
                     `;
                     tableBody.appendChild(row);
@@ -48,6 +50,26 @@
             })
             .catch(err => console.error('Error fetching artworks:', err));
 
+        // Function to edit artwork (to be implemented)
+        function editArtwork(id) {
+            alert("Edit artwork with ID: ${id}");
+        }
+
+        // Function to delete artwork
+        function deleteArtwork(id) {
+            fetch(/admin/delete-artwork/${id}, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Artwork deleted!');
+                    window.location.reload();  // Reload the page to update the table
+                } else {
+                    alert('Error deleting artwork');
+                }
+            })
+            .catch(err => console.error('Error deleting artwork:', err));
+        }
     </script>
 </body>
 </html>
