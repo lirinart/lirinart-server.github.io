@@ -4,7 +4,8 @@ const express = require('express');
 const multer = require('multer');  // Import multer for file handling
 const path = require('path');
 const cloudinary = require('./cloudinary');  // Import Cloudinary config
-const { MongoClient } = require('mongodb');
+//const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');  // Импортируем ObjectId
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -141,6 +142,29 @@ app.get('/admin/add-artwork', (req, res) => {
 app.get('/admin/manage-artworks', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin', 'manage-artworks.html'));
 });
+
+
+// Route to delete an artwork
+    app.delete('/admin/delete-artwork/:id', async (req, res) => {
+    const artworkId = req.params.id;  // Получение ID из параметров URL
+    const db = await connectToDatabase();
+    const collection = db.collection('artworks');
+    
+    try {
+        // Используем ObjectId для преобразования строки в объект ObjectId
+        const result = await collection.deleteOne({ _id: new ObjectId(artworkId) });
+        
+        if (result.deletedCount === 1) {
+            res.status(200).send('Artwork deleted');
+        } else {
+            res.status(404).send('Artwork not found');
+        }
+    } catch (error) {
+        console.error('Error deleting artwork', error);
+        res.status(500).send('Error deleting artwork');
+    }
+});
+
 
 // Route to handle adding artwork
 app.post('/admin/add-artwork', upload.single('image'), async (req, res) => {
