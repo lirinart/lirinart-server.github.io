@@ -57,7 +57,7 @@
 
         // Function to delete artwork
         function deleteArtwork(id) {
-            fetch(/admin/delete-artwork/${id}, {
+            fetch('/admin/delete-artwork/${id}', {
                 method: 'DELETE'
             })
             .then(response => {
