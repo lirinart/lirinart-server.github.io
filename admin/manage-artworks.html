@@ -25,7 +25,28 @@
             <!-- Artwork rows will be inserted dynamically -->
         </tbody>
     </table>
+<!-- Modal for editing artwork -->
+    <div id="edit-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded shadow-md w-96">
+            <h2 class="text-xl font-bold mb-4">Edit Artwork</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <label class="block mb-2 font-medium">Title</label>
+                <input type="text" id="edit-title" class="w-full border p-2 mb-4">
 
+                <label class="block mb-2 font-medium">Description</label>
+                <textarea id="edit-description" class="w-full border p-2 mb-4"></textarea>
+
+                <label class="block mb-2 font-medium">Tags (comma separated)</label>
+                <input type="text" id="edit-tags" class="w-full border p-2 mb-4">
+
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal()" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script>
         // Fetch and display artworks from the server
         fetch('/artworks')
@@ -50,11 +71,7 @@
             })
             .catch(err => console.error('Error fetching artworks:', err));
 
-        // Function to edit artwork (to be implemented)
-        function editArtwork(id) {
-            alert("Edit artwork with ID: ${id}");
-        }
-
+        
         // Function to delete artwork
     function deleteArtwork(id) {
         fetch(`/admin/delete-artwork/${id}`, {  // Use backticks for template literal
@@ -70,6 +87,56 @@
         })
         .catch(err => console.error('Error deleting artwork:', err));
     }
+
+
+    // Open modal and populate with data
+function editArtwork(id) {
+    fetch(`/artworks/${id}`)
+        .then(response => response.json())
+        .then(artwork => {
+            document.getElementById('edit-id').value = artwork._id;
+            document.getElementById('edit-title').value = artwork.title;
+            document.getElementById('edit-description').value = artwork.description;
+            document.getElementById('edit-tags').value = artwork.tags.join(', ');
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+        })
+        .catch(err => console.error('Error loading artwork:', err));
+}
+
+// Close the modal
+function closeModal() {
+    document.getElementById('edit-modal').classList.add('hidden');
+}
+
+// Submit edited data
+document.getElementById('edit-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const id = document.getElementById('edit-id').value;
+    const title = document.getElementById('edit-title').value;
+    const description = document.getElementById('edit-description').value;
+    const tags = document.getElementById('edit-tags').value.split(',').map(tag => tag.trim());
+
+    fetch(`/admin/update-artwork/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, description, tags }),
+    })
+        .then(response => {
+            if (response.ok) {
+                alert('Artwork updated!');
+                closeModal();
+                window.location.reload();
+            } else {
+                alert('Failed to update artwork.');
+            }
+        })
+        .catch(err => console.error('Error updating artwork:', err));
+});
+
     </script>
 </body>
 </html>

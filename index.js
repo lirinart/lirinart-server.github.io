@@ -204,48 +204,54 @@ app.get('/artworks', async (req, res) => {
     }
 });
 
-// Route to update an artwork
+
 app.put('/admin/update-artwork/:id', upload.single('image'), async (req, res) => {
     const artworkId = req.params.id;
     const { title, description, tags } = req.body;
-    const image = req.file ? req.file.buffer : null;
-
-    if (!title || !description || !image) {
-        return res.status(400).send('Missing required fields');
-    }
+    const parsedTags = Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : [];
 
     try {
-        const result = await cloudinary.uploader.upload_stream({ folder: 'lirinart_artworks' }, async (error, result) => {
-            if (error) {
-                return res.status(500).send('Error uploading image');
-            }
+        const db = await connectToDatabase();
+        const collection = db.collection('artworks');
 
-            const db = await connectToDatabase();
-            const collection = db.collection('artworks');
-            const updatedArtwork = {
-                title,
-                description,
-                image: result.secure_url,
-                tags
+        const updateFields = {
+            title,
+            description,
+            tags: parsedTags
+        };
+
+        // Если изображение есть — загружаем в Cloudinary
+        if (req.file) {
+            const streamUpload = (fileBuffer) => {
+                return new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream({ folder: 'lirinart_artworks' }, (error, result) => {
+                        if (error) return reject(error);
+                        resolve(result.secure_url);
+                    });
+                    stream.end(fileBuffer);
+                });
             };
 
-            const updateResult = await collection.updateOne(
-                { _id: new MongoClient.ObjectId(artworkId) },
-                { $set: updatedArtwork }
-            );
+            const imageUrl = await streamUpload(req.file.buffer);
+            updateFields.image = imageUrl;
+        }
 
-            if (updateResult.modifiedCount === 1) {
-                res.status(200).send('Artwork updated');
-            } else {
-                res.status(404).send('Artwork not found');
-            }
-        });
-        result.end(req.file.buffer);
+        const updateResult = await collection.updateOne(
+            { _id: new ObjectId(artworkId) },
+            { $set: updateFields }
+        );
+
+        if (updateResult.matchedCount === 0) {
+            return res.status(404).send('Artwork not found');
+        }
+
+        res.status(200).send('Artwork updated successfully');
     } catch (error) {
-        console.error('Error updating artwork', error);
-        res.status(500).send('Error updating artwork');
+        console.error('Error updating artwork:', error);
+        res.status(500).send('Internal Server Error');
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
