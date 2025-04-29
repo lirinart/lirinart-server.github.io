@@ -19,7 +19,7 @@ async function readSheet() {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: 'lirinart.artworks', // название листа, обычно "Sheet1"
+    range: 'lirinart.artworks!A1:M', // название листа, обычно "Sheet1"
   });
 
   const rows = response.data.values;
